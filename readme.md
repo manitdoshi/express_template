@@ -58,3 +58,84 @@ npm run build
 
 # Run production build
 npm start
+
+++++++++++++++++++++++++++++++++++++++++
+CREATE TABLE roles(
+id SERIAL primary key,
+name VARCHAR(50) UNIQUE NOT NULL
+);
+
+
+CREATE TABLE permissions(
+id SERIAL PRIMARY KEY,
+name VARCHAR(50) UNIQUE NOT NULL
+);
+
+
+CREATE TABLE users(
+id SERIAL PRIMARY KEY,
+email VARCHAR(255) UNIQUE NOT NULL,
+password TEXT NOT NULL,
+role_id INTEGER NOT NULL,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+	CONSTRAINT fk_role
+		FOREIGN KEY(role_id)
+		REFERENCES roles(id)
+		ON DELETE RESTRICT
+);
+
+CREATE TABLE role_permissions(
+role_id INTEGER NOT NULL,
+permission_id INTEGER NOT NULL,
+
+PRIMARY KEY(role_id,permission_id),
+
+CONSTRAINT fk_role
+	FOREIGN KEY(role_id)
+	REFERENCES roles(id)
+	ON DELETE CASCADE,
+
+CONSTRAINT fk_permission
+	FOREIGN KEY(permission_id)
+	REFERENCES permissions(id)
+	ON DELETE CASCADE
+
+);
+
+
+INSERT INTO roles (name)
+VALUES ('ADMIN'), ('MANAGER'), ('USER');
+
+
+INSERT INTO permissions (name)
+VALUES 
+('CREATE_USER'),
+('DELETE_USER'),
+('VIEW_USERS'),
+('UPDATE_PROFILE');
+
+
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT 1, id FROM permissions;
+
+INSERT INTO role_permissions (role_id, permission_id)
+VALUES
+(2, 3), -- VIEW_USERS
+(2, 4); -- UPDATE_PROFILE
+
+INSERT INTO role_permissions (role_id, permission_id)
+VALUES
+(3, 4); -- UPDATE_PROFILE only
+
+
+SELECT r.name AS role, p.name AS permission
+FROM roles r
+JOIN role_permissions rp ON r.id = rp.role_id
+JOIN permissions p ON rp.permission_id = p.id
+ORDER BY r.name;
+
+
+
+
+
